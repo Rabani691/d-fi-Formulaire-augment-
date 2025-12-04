@@ -52,134 +52,134 @@ export default function HomePage() {
           name,
         )}&mission=${encodeURIComponent(missionValue)}`,
       );
-    } catch (err: any) {
-      setError(err.message ?? "Une erreur est survenue");
+    } catch (err) {
+      // ✅ CORRECTION : Typage correct de l'erreur
+      const errorMessage = err instanceof Error ? err.message : "Une erreur est survenue";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-  <main className="min-h-screen flex items-center justify-center p-4">
-    {/* wrapper centré et limité en largeur */}
-    <div className="w-full max-w-xl mx-auto flex flex-col items-center gap-4">
-      <NexusLogo />
+    <main className="min-h-screen flex items-center justify-center p-4">
+      {/* wrapper centré et limité en largeur */}
+      <div className="w-full max-w-xl mx-auto flex flex-col items-center gap-4">
+        <NexusLogo />
 
-      <div className="card w-full">
-        <h1 className="title-glow mb-2 text-center">
-          Le Nexus Connecté : Portail d’Intention
-        </h1>
+        <div className="card w-full">
+          <h1 className="title-glow mb-2 text-center">
+            Le Nexus Connecté : Portail d&apos;Intention
+          </h1>
 
-        {/* 👉 phrase redondante SUPPRIMÉE (on la remplace par une version très courte) */}
-        <p className="text-xs sm:text-sm text-slate-300 mb-6 text-center">
-          Choisis ta mission et ouvre un canal avec le Nexus 🌐.
-        </p>
+          <p className="text-xs sm:text-sm text-slate-300 mb-6 text-center">
+            Choisis ta mission et ouvre un canal avec le Nexus 🌐.
+          </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Anti-spam : champ honeypot caché */}
-          <input
-            type="text"
-            name="robotCheck"
-            className="hidden"
-            tabIndex={-1}
-            autoComplete="off"
-          />
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Anti-spam : champ honeypot caché */}
+            <input
+              type="text"
+              name="robotCheck"
+              className="hidden"
+              tabIndex={-1}
+              autoComplete="off"
+            />
 
-          <div className="space-y-4 animate-fade">
-            {/* Nom */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium" htmlFor="nom">
-                Nom (optionnel mais recommandé)
-              </label>
-              <input
-                id="nom"
-                name="nom"
-                type="text"
-                className="w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
-                placeholder="Axolotl, Chevalier du Code..."
-              />
-            </div>
-
-            {/* Email */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium" htmlFor="email">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
-                placeholder="toi@nexus.dev"
-              />
-            </div>
-
-            {/* Sélection de la Mission */}
-            <div className="space-y-2">
-              <p className="text-sm font-semibold text-slate-100">
-                Choisis ta Mission 🎯
-              </p>
-
-              {/* 🔹 bloc designé pour les missions */}
-              <div className="rounded-xl border border-slate-700 bg-slate-900/70 p-2 sm:p-3 space-y-1">
-                <br></br>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
-                  <MissionButton
-                    value="contact"
-                    current={mission}
-                    onChange={setMission}
-                  >
-                    Établir le Contact 📞
-                  </MissionButton>
-                  <MissionButton
-                    value="don"
-                    current={mission}
-                    onChange={setMission}
-                  >
-                    Offrir un Don 💰
-                  </MissionButton>
-                  <MissionButton
-                    value="benevole"
-                    current={mission}
-                    onChange={setMission}
-                  >
-                    Rejoindre la Guilde 🛡️
-                  </MissionButton>
-                  <MissionButton
-                    value="info"
-                    current={mission}
-                    onChange={setMission}
-                  >
-                    Demander des Infos ❓
-                  </MissionButton>
-                </div>
+            <div className="space-y-4 animate-fade">
+              {/* Nom */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium" htmlFor="nom">
+                  Nom (optionnel mais recommandé)
+                </label>
+                <input
+                  id="nom"
+                  name="nom"
+                  type="text"
+                  className="w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                  placeholder="Axolotl, Chevalier du Code..."
+                />
               </div>
 
-              <input type="hidden" name="mission" value={mission} />
+              {/* Email */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium" htmlFor="email">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  className="w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                  placeholder="toi@nexus.dev"
+                />
+              </div>
+
+              {/* Sélection de la Mission */}
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-slate-100">
+                  Choisis ta Mission 🎯
+                </p>
+
+                {/* bloc designé pour les missions */}
+                <div className="rounded-xl border border-slate-700 bg-slate-900/70 p-2 sm:p-3 space-y-1">
+                  <br />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
+                    <MissionButton
+                      value="contact"
+                      current={mission}
+                      onChange={setMission}
+                    >
+                      Établir le Contact 📞
+                    </MissionButton>
+                    <MissionButton
+                      value="don"
+                      current={mission}
+                      onChange={setMission}
+                    >
+                      Offrir un Don 💰
+                    </MissionButton>
+                    <MissionButton
+                      value="benevole"
+                      current={mission}
+                      onChange={setMission}
+                    >
+                      Rejoindre la Guilde 🛡️
+                    </MissionButton>
+                    <MissionButton
+                      value="info"
+                      current={mission}
+                      onChange={setMission}
+                    >
+                      Demander des Infos ❓
+                    </MissionButton>
+                  </div>
+                </div>
+
+                <input type="hidden" name="mission" value={mission} />
+              </div>
+
+              {/* Champs dynamiques selon la mission */}
+              {mission === "don" && <DonationFields />}
+              {mission === "benevole" && <VolunteerFields />}
+              {(mission === "contact" || mission === "info") && <MessageFields />}
+
+              {error && <p className="text-sm text-red-400">{error}</p>}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn w-full mt-2 disabled:opacity-60"
+              >
+                {loading ? "Ouverture du portail..." : "Envoyer ma Mission"}
+              </button>
             </div>
-
-            {/* Champs dynamiques selon la mission */}
-            {mission === "don" && <DonationFields />}
-            {mission === "benevole" && <VolunteerFields />}
-            {(mission === "contact" || mission === "info") && <MessageFields />}
-
-            {error && <p className="text-sm text-red-400">{error}</p>}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn w-full mt-2 disabled:opacity-60"
-            >
-              {loading ? "Ouverture du portail..." : "Envoyer ma Mission"}
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
-    </div>
-  </main>
-);
-
+    </main>
+  );
 }
 
 type MissionButtonProps = {
@@ -212,7 +212,6 @@ function MissionButton({
     </button>
   );
 }
-
 
 function MessageFields() {
   return (

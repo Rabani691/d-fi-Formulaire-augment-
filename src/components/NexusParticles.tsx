@@ -1,11 +1,13 @@
-"use client";
+'use client';
+import { useRef, useMemo } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { Points, PointMaterial } from '@react-three/drei';
+import * as random from 'maath/random';
 
-import { Canvas } from "@react-three/fiber";
-import { Points, PointMaterial } from "@react-three/drei";
-import { useMemo } from "react";
-import * as THREE from "three";
-
-export default function NexusParticles() {
+function ParticlesMesh() {
+  const ref = useRef<any>(null);
+  
+  // Générer les positions une seule fois
   const positions = useMemo(() => {
     const arr = new Float32Array(500 * 3);
     for (let i = 0; i < 500 * 3; i++) {
@@ -14,19 +16,33 @@ export default function NexusParticles() {
     return arr;
   }, []);
 
+  useFrame((state, delta) => {
+    if (ref.current) {
+      ref.current.rotation.x -= delta / 10;
+      ref.current.rotation.y -= delta / 15;
+    }
+  });
+
   return (
-    <div className="nexus-particles">
-      <Canvas camera={{ position: [0, 0, 6] }}>
-        <ambientLight intensity={0.3} />
-        <Points positions={positions} stride={3}>
-          <PointMaterial
-            size={0.05}
-            transparent
-            depthWrite={false}
-            sizeAttenuation
-            color="#22c55e"
-          />
-        </Points>
+    <group rotation={[0, 0, Math.PI / 4]}>
+      <Points ref={ref} positions={positions} stride={3} frustumCulled={false}>
+        <PointMaterial
+          transparent
+          color="#00d9ff"
+          size={0.015}
+          sizeAttenuation={true}
+          depthWrite={false}
+        />
+      </Points>
+    </group>
+  );
+}
+
+export default function NexusParticles() {
+  return (
+    <div className="fixed inset-0 -z-10">
+      <Canvas camera={{ position: [0, 0, 1] }}>
+        <ParticlesMesh />
       </Canvas>
     </div>
   );

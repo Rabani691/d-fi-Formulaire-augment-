@@ -64,6 +64,7 @@ Nom: ${nom || "utilisateur inconnu"}
 Mission: ${mission}
 Message de l'utilisateur: ${message}
 Montant: ${amount || "N/A"}
+Récurrence: ${recurrence || "N/A"}
 Année: ${year}
 
 Génère un message unique en style 'Nexus futuriste', avec :

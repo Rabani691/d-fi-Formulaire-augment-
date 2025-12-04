@@ -1,7 +1,18 @@
 import { getMessage } from "../api/submit/store";
 
-export default async function ConfirmationPage({ searchParams }: any) {
-  // 👇 OBLIGATOIRE : déstructurer les searchParams en async
+// Définir les types appropriés
+type SearchParams = Promise<{
+  id?: string;
+  name?: string;
+  mission?: string;
+}>;
+
+interface ConfirmationPageProps {
+  searchParams: SearchParams;
+}
+
+export default async function ConfirmationPage({ searchParams }: ConfirmationPageProps) {
+  // Déstructurer les searchParams en async
   const params = await searchParams;
 
   const id = params?.id;
@@ -9,8 +20,8 @@ export default async function ConfirmationPage({ searchParams }: any) {
   const mission = params?.mission || "soutien";
   const year = new Date().getFullYear();
 
-  // Récupération du message IA via l’ID
-  const iaMessage = getMessage(id);
+  // Récupération du message IA via l'ID
+  const iaMessage = id ? getMessage(id) : null;
 
   const missionText: Record<string, string> = {
     contact:
@@ -18,13 +29,12 @@ export default async function ConfirmationPage({ searchParams }: any) {
     don: `Un immense "GG", ${name} ! 🏆 Ton "Don de Ressources" 💎 est une bénédiction pour notre cause 🙏.`,
     benevole:
       "Ta volonté de rejoindre la Guilde des Bénévoles 🛡️ renforce notre front face aux Bugs Ancestraux 🐛.",
-    info: 'Ta demande d’informations a été transmise à nos archivistes du Nexus 📚.',
+    info: 'Ta demande d&apos;informations a été transmise à nos archivistes du Nexus 📚.',
     soutien:
       "Ta contribution renforce le Nexus et protège nos Soutiens Essentiels ❤️.",
   };
 
-  const missionDescription =
-    missionText[mission] ?? missionText["soutien"];
+  const missionDescription = missionText[mission] ?? missionText["soutien"];
 
   return (
     <main className="min-h-screen flex items-center justify-center p-4 bg-slate-950 text-slate-50">
@@ -46,12 +56,12 @@ export default async function ConfirmationPage({ searchParams }: any) {
           <p>
             Grâce à toi, nous pouvons avancer sur le projet{" "}
             <span className="font-semibold">
-              “Renforcement du Nexus et protection des Soutiens Essentiels”
+              &quot;Renforcement du Nexus et protection des Soutiens Essentiels&quot;
             </span>{" "}
             cette année {year}.
           </p>
           <p>
-            Reste connecté pour suivre nos exploits tout au long de l'année{" "}
+            Reste connecté pour suivre nos exploits tout au long de l&apos;année{" "}
             {year} ! 🚀
           </p>
         </div>
