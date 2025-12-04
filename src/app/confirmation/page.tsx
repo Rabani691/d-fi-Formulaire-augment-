@@ -1,48 +1,60 @@
-type Props = {
-  searchParams: {
-    name?: string;
-    mission?: string;
-  };
-};
+import { getMessage } from "../api/submit/store";
 
-export default function ConfirmationPage({ searchParams }: Props) {
-  const name = searchParams.name ?? 'Ami(e) du Nexus';
-  const mission = searchParams.mission ?? 'soutien';
+export default async function ConfirmationPage({ searchParams }: any) {
+  // 👇 OBLIGATOIRE : déstructurer les searchParams en async
+  const params = await searchParams;
+
+  const id = params?.id;
+  const name = params?.name || "Ami(e) du Nexus";
+  const mission = params?.mission || "soutien";
   const year = new Date().getFullYear();
 
-  const missionLabel: Record<string, string> = {
-    contact: "Ton message a bien été acheminé vers nos agents de support.",
-    don: "Ton don de ressources est une bénédiction pour notre cause.",
-    benevole: "Ta volonté de rejoindre la guilde des bénévoles nous renforce.",
-    info: "Ta demande d’information a bien été reçue, nous reviendrons vers toi.",
+  // Récupération du message IA via l’ID
+  const iaMessage = getMessage(id);
+
+  const missionText: Record<string, string> = {
+    contact:
+      'Ton message a bien été acheminé vers nos serveurs centraux 📡. Nos "Agents de Support" 🕵️ te répondront sous peu.',
+    don: `Un immense "GG", ${name} ! 🏆 Ton "Don de Ressources" 💎 est une bénédiction pour notre cause 🙏.`,
+    benevole:
+      "Ta volonté de rejoindre la Guilde des Bénévoles 🛡️ renforce notre front face aux Bugs Ancestraux 🐛.",
+    info: 'Ta demande d’informations a été transmise à nos archivistes du Nexus 📚.',
+    soutien:
+      "Ta contribution renforce le Nexus et protège nos Soutiens Essentiels ❤️.",
   };
 
-  const description =
-    missionLabel[mission] ??
-    "Ta contribution renforce le Nexus et protège nos soutiens essentiels.";
+  const missionDescription =
+    missionText[mission] ?? missionText["soutien"];
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center p-4">
-      <div className="max-w-lg bg-slate-900/80 rounded-2xl p-6 shadow-lg border border-slate-800">
-        <h1 className="text-2xl font-bold mb-2">Salutations, {name} !</h1>
-        <p className="text-sm text-slate-200 mb-4">{description}</p>
+    <main className="min-h-screen flex items-center justify-center p-4 bg-slate-950 text-slate-50">
+      <div className="card max-w-lg w-full space-y-4">
+        <h1 className="text-2xl font-bold">Salutations, {name} ! 👋</h1>
 
-        <p className="text-sm text-emerald-300 mb-2">
-          Ton soutien en <span className="font-semibold">{year}</span> est crucial pour notre
-          progression !
-        </p>
+        <p className="text-sm text-slate-200">{missionDescription}</p>
 
-        <p className="text-sm text-slate-200 mb-2">
-          Grâce à toi, nous pouvons avancer sur le projet&nbsp;
-          <span className="font-semibold">
-            &ldquo;Renforcement du Nexus et protection des soutiens essentiels&rdquo;
-          </span>{' '}
-          cette année {year}.
-        </p>
+        {iaMessage && (
+          <div className="mt-3 p-3 rounded-md bg-slate-800 border border-slate-700 text-sm text-slate-100 whitespace-pre-line">
+            {iaMessage}
+          </div>
+        )}
 
-        <p className="text-sm text-slate-300">
-          Reste connecté pour suivre nos exploits tout au long de l&apos;année {year} !
-        </p>
+        <div className="space-y-2 text-sm text-slate-200 mt-2">
+          <p>
+            Ton soutien en <span className="font-semibold">{year}</span> est crucial pour notre progression ! 📈
+          </p>
+          <p>
+            Grâce à toi, nous pouvons avancer sur le projet{" "}
+            <span className="font-semibold">
+              “Renforcement du Nexus et protection des Soutiens Essentiels”
+            </span>{" "}
+            cette année {year}.
+          </p>
+          <p>
+            Reste connecté pour suivre nos exploits tout au long de l'année{" "}
+            {year} ! 🚀
+          </p>
+        </div>
       </div>
     </main>
   );

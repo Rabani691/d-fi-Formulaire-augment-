@@ -1,56 +1,96 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
+import OpenAI from "openai";
+import { randomUUID } from "crypto";
+import { saveMessage } from "./store";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
 
   if (!body) {
-    return NextResponse.json({ message: 'Payload invalide' }, { status: 400 });
+    return NextResponse.json({ message: "Payload invalide" }, { status: 400 });
   }
 
-  const {
-    robotCheck,
-    nom,
-    email,
-    mission,
-    message,
-    amount,
-    recurrence,
-    skills,
-    availability,
-  } = body as Record<string, unknown>;
+  const { robotCheck, nom, email, mission, message, amount, recurrence } =
+    body as {
+      robotCheck?: string;
+      nom?: string;
+      email?: string;
+      mission?: string;
+      message?: string;
+      amount?: string | number;
+      recurrence?: string;
+    };
 
-  // Anti-spam : si le champ caché est rempli → bot
-  if (typeof robotCheck === 'string' && robotCheck.trim().length > 0) {
-    return NextResponse.json({ message: 'Spam détecté' }, { status: 400 });
+  // Honeypot anti-spam
+  if (typeof robotCheck === "string" && robotCheck.trim() !== "") {
+    return NextResponse.json({ message: "Spam détecté" }, { status: 400 });
   }
 
-  if (!email || typeof email !== 'string') {
-    return NextResponse.json({ message: 'Email obligatoire' }, { status: 400 });
+  // Vérification basique des champs requis
+  if (!email || !mission || !message) {
+    return NextResponse.json(
+      { message: "Champs requis manquants" },
+      { status: 400 },
+    );
   }
 
-  if (!mission || typeof mission !== 'string') {
-    return NextResponse.json({ message: 'Mission obligatoire' }, { status: 400 });
+  const year = new Date().getFullYear();
+
+  // Vérifier la clé OpenAI
+  if (!process.env.OPENAI_API_KEY) {
+    return NextResponse.json(
+      { message: "Clé OpenAI manquante côté serveur" },
+      { status: 500 },
+    );
   }
 
-  if (!message || typeof message !== 'string') {
-    return NextResponse.json({ message: 'Message obligatoire' }, { status: 400 });
+  const client = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+
+  try {
+    const iaResponse = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content:
+            "Tu es une IA qui crée un message personnalisé, stylé, chaleureux et inspirant, dans un univers Nexus futuriste.",
+        },
+        {
+          role: "user",
+          content: `
+Nom: ${nom || "utilisateur inconnu"}
+Mission: ${mission}
+Message de l'utilisateur: ${message}
+Montant: ${amount || "N/A"}
+Année: ${year}
+
+Génère un message unique en style 'Nexus futuriste', avec :
+- salutation personnalisée
+- référence claire à la mission (contact, don, bénévole ou info)
+- mention de l'année
+- remerciement spécial
+- ton immersif, positif, et héroïque (Chevalier du Code, Nexus, Bugs Ancestraux…)
+        `,
+        },
+      ],
+    });
+
+    const messageIA = iaResponse.choices[0]?.message?.content ?? "";
+
+    const id = randomUUID();
+    saveMessage(id, messageIA);
+
+    return NextResponse.json({
+      ok: true,
+      id,
+    });
+  } catch (error) {
+    console.error("Erreur OpenAI:", error);
+    return NextResponse.json(
+      { message: "Erreur lors de la génération IA" },
+      { status: 500 },
+    );
   }
-
-  // Validation spécifique au don
-  if (mission === 'don') {
-    const amountNumber = Number(amount);
-    if (!amountNumber || amountNumber <= 0) {
-      return NextResponse.json(
-        { message: 'Montant de don invalide' },
-        { status: 400 },
-      );
-    }
-  }
-
-  // Ici tu pourrais :
-  // - enregistrer dans une base de données
-  // - envoyer un email
-  // - appeler une API externe, etc.
-
-  return NextResponse.json({ ok: true });
 }

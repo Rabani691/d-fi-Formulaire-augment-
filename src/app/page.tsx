@@ -1,13 +1,14 @@
-'use client';
+"use client";
 
-import { FormEvent, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import NexusLogo from "@/components/NexusLogo";
 
-type Mission = 'contact' | 'don' | 'benevole' | 'info';
+type Mission = "contact" | "don" | "benevole" | "info";
 
 export default function HomePage() {
   const router = useRouter();
-  const [mission, setMission] = useState<Mission>('contact');
+  const [mission, setMission] = useState<Mission>("contact");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,119 +17,169 @@ export default function HomePage() {
     setError(null);
     setLoading(true);
 
+    const portalSound =
+      typeof Audio !== "undefined" ? new Audio("/nexus-portal.mp3") : null;
+
     const formData = new FormData(e.currentTarget);
     const payload = Object.fromEntries(formData.entries());
 
     try {
-      const res = await fetch('/api/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.message ?? 'Erreur serveur');
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data || !data.ok || !data.id) {
+        throw new Error(data?.message ?? "Erreur serveur");
       }
 
-      const name = (payload.nom as string) || 'Ami(e) du Nexus';
-      const mission = payload.mission as string;
+      const name =
+        (payload.nom as string | undefined)?.trim() || "Ami(e) du Nexus";
+      const missionValue = (payload.mission as string | undefined) ?? "contact";
 
-      // Redirection vers la page de confirmation avec query params
+      if (portalSound) {
+        portalSound.currentTime = 0;
+        portalSound.play().catch(() => {});
+      }
+
       router.push(
-        `/confirmation?name=${encodeURIComponent(name)}&mission=${encodeURIComponent(
-          mission,
-        )}`,
+        `/confirmation?id=${encodeURIComponent(
+          data.id,
+        )}&name=${encodeURIComponent(
+          name,
+        )}&mission=${encodeURIComponent(missionValue)}`,
       );
     } catch (err: any) {
-      setError(err.message ?? 'Une erreur est survenue');
+      setError(err.message ?? "Une erreur est survenue");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-xl bg-slate-900/80 rounded-2xl p-6 shadow-lg border border-slate-800">
-        <h1 className="text-2xl font-bold mb-2">
-          Le Nexus Connecté : Formulaire d’Interaction Dynamique
+  <main className="min-h-screen flex items-center justify-center p-4">
+    {/* wrapper centré et limité en largeur */}
+    <div className="w-full max-w-xl mx-auto flex flex-col items-center gap-4">
+      <NexusLogo />
+
+      <div className="card w-full">
+        <h1 className="title-glow mb-2 text-center">
+          Le Nexus Connecté : Portail d’Intention
         </h1>
-        <p className="text-sm text-slate-300 mb-6">
-          Choisis ta <span className="font-semibold text-emerald-300">mission</span> et ouvre le
-          portail de soutien.
+
+        {/* 👉 phrase redondante SUPPRIMÉE (on la remplace par une version très courte) */}
+        <p className="text-xs sm:text-sm text-slate-300 mb-6 text-center">
+          Choisis ta mission et ouvre un canal avec le Nexus 🌐.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Anti-spam : champ honeypot caché */}
-          <input type="text" name="robotCheck" className="hidden" tabIndex={-1} autoComplete="off" />
+          <input
+            type="text"
+            name="robotCheck"
+            className="hidden"
+            tabIndex={-1}
+            autoComplete="off"
+          />
 
-          {/* Nom */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium" htmlFor="nom">
-              Nom (optionnel mais recommandé)
-            </label>
-            <input
-              id="nom"
-              name="nom"
-              type="text"
-              className="w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
-              placeholder="Axolotl, Chevalier du Code..."
-            />
-          </div>
-
-          {/* Email */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium" htmlFor="email">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              className="w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
-              placeholder="toi@nexus.dev"
-            />
-          </div>
-
-          {/* Sélection de la mission */}
-          <div className="space-y-2">
-            <p className="text-sm font-medium">Choisis ta mission</p>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <MissionButton value="contact" current={mission} onChange={setMission}>
-                Établir le contact
-              </MissionButton>
-              <MissionButton value="don" current={mission} onChange={setMission}>
-                Offrir un don
-              </MissionButton>
-              <MissionButton value="benevole" current={mission} onChange={setMission}>
-                Rejoindre les bénévoles
-              </MissionButton>
-              <MissionButton value="info" current={mission} onChange={setMission}>
-                Demander des infos
-              </MissionButton>
+          <div className="space-y-4 animate-fade">
+            {/* Nom */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium" htmlFor="nom">
+                Nom (optionnel mais recommandé)
+              </label>
+              <input
+                id="nom"
+                name="nom"
+                type="text"
+                className="w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                placeholder="Axolotl, Chevalier du Code..."
+              />
             </div>
-            <input type="hidden" name="mission" value={mission} />
+
+            {/* Email */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium" htmlFor="email">
+                Email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                className="w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                placeholder="toi@nexus.dev"
+              />
+            </div>
+
+            {/* Sélection de la Mission */}
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-slate-100">
+                Choisis ta Mission 🎯
+              </p>
+
+              {/* 🔹 bloc designé pour les missions */}
+              <div className="rounded-xl border border-slate-700 bg-slate-900/70 p-2 sm:p-3 space-y-1">
+                <br></br>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
+                  <MissionButton
+                    value="contact"
+                    current={mission}
+                    onChange={setMission}
+                  >
+                    Établir le Contact 📞
+                  </MissionButton>
+                  <MissionButton
+                    value="don"
+                    current={mission}
+                    onChange={setMission}
+                  >
+                    Offrir un Don 💰
+                  </MissionButton>
+                  <MissionButton
+                    value="benevole"
+                    current={mission}
+                    onChange={setMission}
+                  >
+                    Rejoindre la Guilde 🛡️
+                  </MissionButton>
+                  <MissionButton
+                    value="info"
+                    current={mission}
+                    onChange={setMission}
+                  >
+                    Demander des Infos ❓
+                  </MissionButton>
+                </div>
+              </div>
+
+              <input type="hidden" name="mission" value={mission} />
+            </div>
+
+            {/* Champs dynamiques selon la mission */}
+            {mission === "don" && <DonationFields />}
+            {mission === "benevole" && <VolunteerFields />}
+            {(mission === "contact" || mission === "info") && <MessageFields />}
+
+            {error && <p className="text-sm text-red-400">{error}</p>}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn w-full mt-2 disabled:opacity-60"
+            >
+              {loading ? "Ouverture du portail..." : "Envoyer ma Mission"}
+            </button>
           </div>
-
-          {/* Champs dynamiques selon la mission */}
-          {mission === 'don' && <DonationFields />}
-          {mission === 'benevole' && <VolunteerFields />}
-          {(mission === 'contact' || mission === 'info') && <MessageFields />}
-
-          {error && <p className="text-sm text-red-400">{error}</p>}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full mt-4 rounded-md bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold py-2 text-sm disabled:opacity-60"
-          >
-            {loading ? 'Ouverture du portail...' : 'Envoyer ma mission'}
-          </button>
         </form>
       </div>
-    </main>
-  );
+    </div>
+  </main>
+);
+
 }
 
 type MissionButtonProps = {
@@ -138,22 +189,30 @@ type MissionButtonProps = {
   children: React.ReactNode;
 };
 
-function MissionButton({ value, current, onChange, children }: MissionButtonProps) {
+function MissionButton({
+  value,
+  current,
+  onChange,
+  children,
+}: MissionButtonProps) {
   const active = current === value;
+
   return (
     <button
       type="button"
       onClick={() => onChange(value)}
-      className={`rounded-md border px-2 py-2 ${
-        active
-          ? 'bg-emerald-500 text-slate-950 border-emerald-400'
-          : 'bg-slate-800 border-slate-700 text-slate-100 hover:bg-slate-700'
-      }`}
+      className={`w-full rounded-lg border px-3 py-2 font-medium text-left transition
+        ${
+          active
+            ? "bg-emerald-400/95 text-slate-950 border-emerald-300 shadow-md shadow-emerald-500/40"
+            : "bg-slate-900/70 border-slate-700 text-slate-100 hover:bg-slate-800 hover:border-emerald-400/60"
+        }`}
     >
       {children}
     </button>
   );
 }
+
 
 function MessageFields() {
   return (
@@ -178,7 +237,7 @@ function DonationFields() {
     <div className="space-y-3">
       <div className="space-y-1">
         <label className="text-sm font-medium" htmlFor="amount">
-          Montant du don (€)
+          Montant du Don (€)
         </label>
         <input
           id="amount"
